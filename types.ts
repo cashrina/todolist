@@ -12,3 +12,13 @@ export interface UserMethods {
 }
 
 export type UserModel = Model<UserFields, {}, UserMethods>
+
+export interface Task {
+    _id: string;
+    user: string;
+    title: string;
+    description: string;
+    status: string;
+}
+
+export type TaskWithoutId = Omit<Task, 'id'>

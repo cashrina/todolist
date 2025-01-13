@@ -1,32 +1,28 @@
-import {Request, Response, NextFunction} from 'express';
-import {HydratedDocument} from 'mongoose';
-import {UserFields, UserMethods} from '../types';
-import User from '../models/User';
+import {NextFunction, Request, Response} from 'express';
+import {HydratedDocument} from "mongoose";
+import {UserFields, UserMethods} from "../types";
+import User from "../models/User";
 
 export interface RequestWithUser extends Request {
   user?: HydratedDocument<UserFields, UserMethods>;
 }
 
-const auth = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-  const headerValue = req.get('Authorization');
+const auth = async (expressReq: Request,res:Response,next:NextFunction) => {
+  const req = expressReq as RequestWithUser;
 
-  if(!headerValue) {
-    return res.status(401).send({error: 'Header: ddd'})
+  const token = req.get('Authorization');
+  if (!token) {
+    res.status(401).send({error: 'No token present'});
+    return;
   }
-
-  const [_bearer, token] = headerValue.split(' ');
-  if(!token) {
-    return res.status(401).send({error: 'Token not found'})
-  }
-
   const user = await User.findOne({token});
   if (!user) {
-    return res.status(401).send({error: 'Wrong Token'})
+    res.status(401).send({error: 'Wrong token!'});
+    return
   }
 
   req.user = user;
-
-  return next();
+  next();
 };
 
 export default auth;
